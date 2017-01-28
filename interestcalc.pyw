@@ -8,17 +8,19 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import math
+from currency_tostr import *
 
-vardic = {'FV':'','PV':'','r':'','t':'','n':''}
+vardic = {'FV':'','PV':'','r':'','t':'','n':'12'}
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(356, 258)
+
+        MainWindow.resize(280, 240)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(130, 0, 101, 41))
+        self.label.setGeometry(QtCore.QRect(10, 190, 101, 41))
         self.label.setObjectName("label")
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(10, 50, 91, 16))
@@ -35,65 +37,64 @@ class Ui_MainWindow(object):
         self.label_6 = QtWidgets.QLabel(self.centralwidget)
         self.label_6.setGeometry(QtCore.QRect(10, 170, 101, 16))
         self.label_6.setObjectName("label_6")
-        self.lineEdit = QtWidgets.QLineEdit(self.centralwidget)
+
+        self.lineEdit = MyLineEdit(self.centralwidget)
         self.lineEdit.setGeometry(QtCore.QRect(120, 50, 113, 20))
         self.lineEdit.setObjectName("lineEdit")
-        self.lineEdit.textChanged.connect(self.fvChanged)
+        #self.lineEdit.textEdited.connect(self.fvChanged)
         
-        self.lineEdit_2 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEdit_2 = MyLineEdit(self.centralwidget)
         self.lineEdit_2.setGeometry(QtCore.QRect(120, 80, 113, 20))
         self.lineEdit_2.setObjectName("lineEdit_2")
-        self.lineEdit_2.textChanged.connect(self.pvChanged)
+        #self.lineEdit_2.textEdited.connect(self.pvChanged)
         
-        self.lineEdit_3 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEdit_3 = MyLineEdit(self.centralwidget)
         self.lineEdit_3.setGeometry(QtCore.QRect(120, 110, 113, 20))
         self.lineEdit_3.setObjectName("lineEdit_3")
-        self.lineEdit_3.textChanged.connect(self.rChanged)
+        #self.lineEdit_3.textEdited.connect(self.rChanged)
         
-        self.lineEdit_4 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEdit_4 = MyLineEdit(self.centralwidget)
         self.lineEdit_4.setGeometry(QtCore.QRect(120, 140, 113, 20))
         self.lineEdit_4.setObjectName("lineEdit_4")
-        self.lineEdit_4.textChanged.connect(self.tChanged)
+        #self.lineEdit_4.textEdited.connect(self.tChanged)
         
-        self.lineEdit_5 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEdit_5 = MyLineEdit(self.centralwidget)
         self.lineEdit_5.setGeometry(QtCore.QRect(120, 170, 113, 20))
         self.lineEdit_5.setObjectName("lineEdit_5")
-        self.lineEdit_5.textChanged.connect(self.nChanged)
+        #self.lineEdit_5.textEdited.connect(self.nChanged)
         self.lineEdit_5.setText('12')
-        
+
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 356, 21))
         self.menubar.setObjectName("menubar")
+        self.menuFile = QtWidgets.QMenu(self.menubar)
+        self.menuFile.setObjectName("menuFile")
         MainWindow.setMenuBar(self.menubar)
+        self.actionRestart = QtWidgets.QAction(MainWindow)
+        self.actionRestart.setObjectName("actionRestart")
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+        self.menuFile.addAction(self.actionRestart)
+        self.menubar.addAction(self.menuFile.menuAction())
+        self.actionRestart.triggered.connect(self.restart_fields)
+
+
+
+
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-
-    def fvChanged(self):
-        vardic['FV']=self.lineEdit.text()
-        if list(vardic.values()).count('')==1:
-            self.calcDecision()
-            
-    def pvChanged(self):
-        vardic['PV']=self.lineEdit_2.text()
-        if list(vardic.values()).count('')==1:
-            self.calcDecision()
-    def rChanged(self):
-        vardic['r']=self.lineEdit_3.text()
-        if list(vardic.values()).count('')==1:
-            self.calcDecision()
-    def tChanged(self):
-        vardic['t']=self.lineEdit_4.text()
-        if list(vardic.values()).count('')==1:
-            self.calcDecision()
-    def nChanged(self):
-        vardic['n']=self.lineEdit_5.text()
-        if list(vardic.values()).count('')==1:
+    def changed(self):
+        vardic['FV'] = self.lineEdit.text()
+        vardic['PV'] = self.lineEdit_2.text()
+        vardic['r'] = self.lineEdit_3.text()
+        vardic['t'] = self.lineEdit_4.text()
+        vardic['n'] = self.lineEdit_5.text()
+        if list(vardic.values()).count('') == 1:
             self.calcDecision()
         
     def calcDecision(self):
@@ -111,52 +112,52 @@ class Ui_MainWindow(object):
                     self.nCalc()
                     
     def fvCalc(self):
-        PV = float(vardic['PV'])
+        PV = float(cur_to_str(vardic['PV']))
         r = float(vardic['r'])
         t = int(vardic['t'])
         n = int(vardic['n'])
 
-        FV = round(PV*(1+r/n)**(t*n),2)
+        FV = round(PV*(1+r/n)**(t*n), 2)
         
-        vardic['FV']=str(FV)
+        vardic['FV'] = str_to_cur(str(FV))
         self.lineEdit.setText(vardic['FV'])
         
     def pvCalc(self):
-        FV = float(vardic['FV'])
+        FV = float(cur_to_str(vardic['FV']))
         r = float(vardic['r'])
         t = int(vardic['t'])
         n = int(vardic['n'])
 
-        PV = round(FV/((1+r/n)**(t*n)),2)
+        PV = round(FV/((1+r/n)**(t*n)), 2)
         
-        vardic['PV']=str(PV)
+        vardic['PV'] = str_to_cur(str(PV))
         self.lineEdit_2.setText(vardic['PV'])
         
     def rCalc(self):
-        FV = float(vardic['FV'])
-        PV = float(vardic['PV'])
+        FV = float(cur_to_str(vardic['FV']))
+        PV = float(cur_to_str(vardic['PV']))
         t = int(vardic['t'])
         n = int(vardic['n'])
 
-        r = round(n*((FV/PV)**(1/(n*t))-1),3)
+        r = round(n*((FV/PV)**(1/(n*t))-1), 3)
 
-        vardic['r']=str(r)
+        vardic['r'] = str(r)
         self.lineEdit_3.setText(vardic['r'])
         
     def tCalc(self):
-        FV = float(vardic['FV'])
-        PV = float(vardic['PV'])
+        FV = float(cur_to_str(vardic['FV']))
+        PV = float(cur_to_str(vardic['PV']))
         r = float(vardic['r'])
         n = int(vardic['n'])
 
-        t = round(math.log(FV/PV)/(n*math.log((n+r)/n)),1)
+        t = round(math.log(FV/PV)/(n*math.log((n+r)/n)), 1)
 
         vardic['t']=str(t)
         self.lineEdit_4.setText(vardic['t'])
         
     def nCalc(self):
-        FV = float(vardic['FV'])
-        PV = float(vardic['PV'])
+        FV = float(cur_to_str(vardic['FV']))
+        PV = float(cur_to_str(vardic['PV']))
         r = float(vardic['r'])
         t = int(vardic['t'])
         
@@ -164,7 +165,8 @@ class Ui_MainWindow(object):
         
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Interest Calculator"))
+        MainWindow.setWindowIcon(QtGui.QIcon(QtGui.QPixmap('pwis16.png')))
         self.label.setText(_translate("MainWindow", "FV = PV*(1+r/n)^tn"))
         self.label_2.setText(_translate("MainWindow", "Future Value:    FV"))
         self.label_3.setText(_translate("MainWindow", "Present Value:  PV"))
@@ -172,11 +174,63 @@ class Ui_MainWindow(object):
         self.label_5.setText(_translate("MainWindow", "Time Period:      t"))
         self.label_6.setText(_translate("MainWindow", "compound per:  n"))
 
+    def restart_fields(self):
+        vardic = {'FV': '', 'PV': '', 'r': '', 't': '', 'n': '12'}
+        self.lineEdit.setText(vardic['FV'])
+        self.lineEdit_2.setText(vardic['PV'])
+        self.lineEdit_3.setText(vardic['r'])
+        self.lineEdit_4.setText(vardic['t'])
+        self.lineEdit_5.setText(vardic['n'])
+
+
+class MyLineEdit(QtWidgets.QLineEdit, Ui_MainWindow):
+
+    def __init__(self, parent=None):
+        super(MyLineEdit, self).__init__(parent)
+        self.readyToEdit = True
+
+    def mousePressEvent(self, e):
+        super(MyLineEdit, self).mousePressEvent(e)  # required to deselect on 2e click
+        if self.readyToEdit:
+            self.selectAll()
+            self.readyToEdit = False
+
+
+
+    def focusOutEvent(self, event):
+        print('This widget is out of focus')
+        ui.changed()
+        try:
+            if float(self.text()) > 100:
+
+                self.setText(str_to_cur(self.text()))
+        except:
+            pass
+        QtWidgets.QLineEdit.focusOutEvent(self, QtGui.QFocusEvent(QtCore.QEvent.FocusOut))
+        self.readyToEdit = True
+
+    """def focusInEvent(self, event):
+        print('This widget is in focus')
+
+        QtWidgets.QLineEdit.focusInEvent(self, QtGui.QFocusEvent(QtCore.QEvent.FocusIn))
+        #self.selectAll()
+    """
+
+
+    #to do,  '${:,.2f}'.format(1234.5) to go to dollars n back
+
+
+
+
+
+
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
+
     MainWindow = QtWidgets.QMainWindow()
+
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
