@@ -9,6 +9,9 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import math
 from currency_tostr import *
+from numpy import arange, sin, pi
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
 
 vardic = {'FV':'','PV':'','r':'','t':'','n':'12'}
 
@@ -16,11 +19,15 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
 
-        MainWindow.resize(280, 240)
+        MainWindow.resize(680, 240)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+
+
         self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(10, 190, 101, 41))
+        self.label.setGeometry(QtCore.QRect(75, 0, 101, 41))
         self.label.setObjectName("label")
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(10, 50, 91, 16))
@@ -46,16 +53,19 @@ class Ui_MainWindow(object):
         self.lineEdit_2 = MyLineEdit(self.centralwidget)
         self.lineEdit_2.setGeometry(QtCore.QRect(120, 80, 113, 20))
         self.lineEdit_2.setObjectName("lineEdit_2")
+        self.lineEdit_2.setText('15000')
         #self.lineEdit_2.textEdited.connect(self.pvChanged)
-        
+
         self.lineEdit_3 = MyLineEdit(self.centralwidget)
         self.lineEdit_3.setGeometry(QtCore.QRect(120, 110, 113, 20))
         self.lineEdit_3.setObjectName("lineEdit_3")
         #self.lineEdit_3.textEdited.connect(self.rChanged)
+        self.lineEdit_3.setText('0.06')
         
         self.lineEdit_4 = MyLineEdit(self.centralwidget)
         self.lineEdit_4.setGeometry(QtCore.QRect(120, 140, 113, 20))
         self.lineEdit_4.setObjectName("lineEdit_4")
+        #self.lineEdit_4.setText('12')
         #self.lineEdit_4.textEdited.connect(self.tChanged)
         
         self.lineEdit_5 = MyLineEdit(self.centralwidget)
@@ -65,28 +75,35 @@ class Ui_MainWindow(object):
         self.lineEdit_5.setText('12')
 
 
+
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 356, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 726, 21))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
         MainWindow.setMenuBar(self.menubar)
-        self.actionRestart = QtWidgets.QAction(MainWindow)
-        self.actionRestart.setObjectName("actionRestart")
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+        self.actionRestart = QtWidgets.QAction(MainWindow)
+        self.actionRestart.setObjectName("actionRestart")
         self.menuFile.addAction(self.actionRestart)
         self.menubar.addAction(self.menuFile.menuAction())
         self.actionRestart.triggered.connect(self.restart_fields)
 
-
-
+        self.l = QtWidgets.QGroupBox(self.centralwidget)
+        self.grid = QtWidgets.QGridLayout(self.l)
+        self.l.setGeometry(QtCore.QRect(250, 30, 400, 200))
+        self.l.setTitle("plot")
+        #self.l.setSizePolicy(QtWidgets.sizeHint(),QtWidgets.sizeHint())
 
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+
 
     def changed(self):
         vardic['FV'] = self.lineEdit.text()
@@ -96,7 +113,11 @@ class Ui_MainWindow(object):
         vardic['n'] = self.lineEdit_5.text()
         if list(vardic.values()).count('') == 1:
             self.calcDecision()
-        
+
+
+            self.sc = MyMplCanvas(self.centralwidget, width=250, height=150, dpi=100)
+            self.grid.addWidget(self.sc)
+
     def calcDecision(self):
         for name, val in vardic.items():
             if val == '':
@@ -110,7 +131,7 @@ class Ui_MainWindow(object):
                     self.tCalc()
                 if name == 'n':
                     self.nCalc()
-                    
+
     def fvCalc(self):
         PV = float(cur_to_str(vardic['PV']))
         r = float(vardic['r'])
@@ -118,10 +139,10 @@ class Ui_MainWindow(object):
         n = int(vardic['n'])
 
         FV = round(PV*(1+r/n)**(t*n), 2)
-        
+
         vardic['FV'] = str_to_cur(str(FV))
         self.lineEdit.setText(vardic['FV'])
-        
+
     def pvCalc(self):
         FV = float(cur_to_str(vardic['FV']))
         r = float(vardic['r'])
@@ -129,10 +150,10 @@ class Ui_MainWindow(object):
         n = int(vardic['n'])
 
         PV = round(FV/((1+r/n)**(t*n)), 2)
-        
+
         vardic['PV'] = str_to_cur(str(PV))
         self.lineEdit_2.setText(vardic['PV'])
-        
+
     def rCalc(self):
         FV = float(cur_to_str(vardic['FV']))
         PV = float(cur_to_str(vardic['PV']))
@@ -143,7 +164,7 @@ class Ui_MainWindow(object):
 
         vardic['r'] = str(r)
         self.lineEdit_3.setText(vardic['r'])
-        
+
     def tCalc(self):
         FV = float(cur_to_str(vardic['FV']))
         PV = float(cur_to_str(vardic['PV']))
@@ -154,15 +175,15 @@ class Ui_MainWindow(object):
 
         vardic['t']=str(t)
         self.lineEdit_4.setText(vardic['t'])
-        
+
     def nCalc(self):
         FV = float(cur_to_str(vardic['FV']))
         PV = float(cur_to_str(vardic['PV']))
         r = float(vardic['r'])
         t = int(vardic['t'])
-        
 
-        
+
+
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Interest Calculator"))
@@ -173,6 +194,12 @@ class Ui_MainWindow(object):
         self.label_4.setText(_translate("MainWindow", "Interest Rate:   r"))
         self.label_5.setText(_translate("MainWindow", "Time Period:      t"))
         self.label_6.setText(_translate("MainWindow", "compound per:  n"))
+
+        self.menuFile.setTitle(_translate("MainWindow", "File"))
+        self.actionRestart.setText(_translate("MainWindow", "Restart"))
+
+
+
 
     def restart_fields(self):
         vardic = {'FV': '', 'PV': '', 'r': '', 't': '', 'n': '12'}
@@ -219,6 +246,38 @@ class MyLineEdit(QtWidgets.QLineEdit, Ui_MainWindow):
 
     #to do,  '${:,.2f}'.format(1234.5) to go to dollars n back
 
+
+class MyMplCanvas(FigureCanvas):
+    """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(1,1,1)
+        # We want the axes cleared every time plot() is called
+        #self.axes.hold(False)
+        FigureCanvas.__init__(self, figure=fig)
+        self.compute_initial_figure()
+
+        #
+
+        self.setParent(parent)
+        FigureCanvas.setGeometry(self,300,20,100,100)
+        FigureCanvas.setSizePolicy(self,
+                QtWidgets.QSizePolicy.Expanding,
+                                   QtWidgets.QSizePolicy.Expanding)
+
+        FigureCanvas.updateGeometry(self)
+
+    def compute_initial_figure(self):
+
+        pv = float(cur_to_str(vardic['PV']))
+        r = float(vardic['r'])
+        n = float(vardic['n'])
+        timelength = int(vardic['t'])# * int(n)
+        time = list(range(timelength))
+
+        value = [pv*(1+r/n)**(n*t) for t in time]
+        self.axes.plot(time, value)
+        self.draw()
 
 
 
